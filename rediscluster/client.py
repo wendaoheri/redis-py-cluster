@@ -127,7 +127,7 @@ class StrictRedisCluster(StrictRedis):
 
     def __init__(self, host=None, port=None, startup_nodes=None, max_connections=None, max_connections_per_node=False, init_slot_cache=True,
                  readonly_mode=False, reinitialize_steps=None, skip_full_coverage_check=False, nodemanager_follow_cluster=False,
-                 connection_class=None, **kwargs):
+                 connection_class=None,ip_mapping=None, **kwargs):
         """
         :startup_nodes:
             List of nodes that initial bootstrapping can be done from
@@ -180,6 +180,7 @@ class StrictRedisCluster(StrictRedis):
                 skip_full_coverage_check=skip_full_coverage_check,
                 nodemanager_follow_cluster=nodemanager_follow_cluster,
                 connection_class=connection_class,
+                ip_mapping=ip_mapping,
                 **kwargs
             )
 
@@ -870,7 +871,7 @@ class StrictRedisCluster(StrictRedis):
             options work on multiple keys that can exist on multiple servers.
         """
         if (start is None and num is not None) or \
-           (start is not None and num is None):
+                (start is not None and num is None):
             raise RedisError("RedisError: ``start`` and ``num`` must both be specified")
         try:
             data_type = b(self.type(name))
