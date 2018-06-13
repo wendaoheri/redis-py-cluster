@@ -18,7 +18,7 @@ class NodeManager(object):
     """
     RedisClusterHashSlots = 16384
 
-    def __init__(self, startup_nodes=None, reinitialize_steps=None, skip_full_coverage_check=False, nodemanager_follow_cluster=False, **connection_kwargs):
+    def __init__(self, startup_nodes=None, reinitialize_steps=None, skip_full_coverage_check=False, nodemanager_follow_cluster=False,ip_mapping=None, **connection_kwargs):
         """
         :skip_full_coverage_check:
             Skips the check of cluster-require-full-coverage config, useful for clusters
@@ -31,7 +31,14 @@ class NodeManager(object):
         self.connection_kwargs = connection_kwargs
         self.nodes = {}
         self.slots = {}
-        self.startup_nodes = [] if startup_nodes is None else startup_nodes
+        self.ip_mapping = ip_mapping if ip_mapping is not None else {}
+
+
+        self.startup_nodes = []
+        for node in startup_nodes:
+            node['host'] = self.change_host(node['host'])
+            self.startup_nodes.append(node)
+
         self.orig_startup_nodes = [node for node in self.startup_nodes]
         self.reinitialize_counter = 0
         self.reinitialize_steps = reinitialize_steps or 25
@@ -40,6 +47,9 @@ class NodeManager(object):
 
         if not self.startup_nodes:
             raise RedisClusterException("No startup nodes provided")
+
+    def change_host(self, ori_host):
+        return ori_host if ori_host not in self.ip_mapping else self.ip_mapping.get(ori_host)
 
     def encode(self, value):
         """
@@ -176,6 +186,9 @@ class NodeManager(object):
             try:
                 r = self.get_redis_link(host=node["host"], port=node["port"], decode_responses=True)
                 cluster_slots = r.execute_command("cluster", "slots")
+                for cs in cluster_slots:
+                    slot_host = cs[2][0]
+                    cs[2][0] = self.change_host(slot_host)
                 startup_nodes_reachable = True
             except ConnectionError:
                 continue

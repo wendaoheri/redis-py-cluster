@@ -100,7 +100,7 @@ class ClusterConnectionPool(ConnectionPool):
 
     def __init__(self, startup_nodes=None, init_slot_cache=True, connection_class=ClusterConnection,
                  max_connections=None, max_connections_per_node=False, reinitialize_steps=None,
-                 skip_full_coverage_check=False, nodemanager_follow_cluster=False, **connection_kwargs):
+                 skip_full_coverage_check=False, nodemanager_follow_cluster=False,ip_mapping=None, **connection_kwargs):
         """
         :skip_full_coverage_check:
             Skips the check of cluster-require-full-coverage config, useful for clusters
@@ -134,6 +134,7 @@ class ClusterConnectionPool(ConnectionPool):
             skip_full_coverage_check=skip_full_coverage_check,
             max_connections=self.max_connections,
             nodemanager_follow_cluster=nodemanager_follow_cluster,
+            ip_mapping=ip_mapping,
             **connection_kwargs
         )
 
