@@ -186,8 +186,9 @@ class NodeManager(object):
                 r = self.get_redis_link(host=node["host"], port=node["port"], decode_responses=True)
                 cluster_slots = r.execute_command("cluster", "slots")
                 for cs in cluster_slots:
-                    slot_host = cs[2][0]
-                    cs[2][0] = self.change_host(slot_host)
+                    for i in range(len(cs[2:])):
+                        slot_host = cs[i + 2][0]
+                        cs[i + 2][0] = self.change_host(slot_host)
                 startup_nodes_reachable = True
             except ConnectionError:
                 continue
